@@ -4,6 +4,11 @@
   "title": "KnowDrive",
   "description": "Multimodal knowledge base for agents: RAG with hybrid semantic search over your private data; returns ranked passages so the corpus stays out of context.",
   "version": "1.0.0",
+  "repository": {
+    "url": "https://github.com/Recourse-Software-Inc/knowdrive-mcp",
+    "source": "github",
+    "id": "1337981344"
+  },
   "remotes": [
     {
       "type": "streamable-http",
