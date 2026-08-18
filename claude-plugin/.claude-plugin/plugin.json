@@ -1,6 +1,6 @@
 {
   "name": "knowdrive",
-  "description": "Multimodal knowledge base for agents: RAG with hybrid semantic search over your private data; returns ranked passages so the corpus stays out of context.",
+  "description": "Multiplayer RAG: multimodal semantic search over you and your team's private knowledge base.",
   "version": "1.0.0",
   "license": "MIT",
   "author": {

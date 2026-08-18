@@ -4,7 +4,7 @@
 
 # KnowDrive MCP Server
 
-**Multiplayer RAG for your private data: multimodal semantic search over you and your team's knowledge base — the corpus stays out of the conversation. Login to send invites and share access at knowdrive.ai** Just add "check KnowDrive". Hybrid search ranks passages from docs, audio, and images.
+**Multiplayer RAG for your private data: multimodal semantic search over you and your team's knowledge base — the corpus stays out of the conversation.** Login to send invites and share access at knowdrive.ai. Just add "check KnowDrive". Hybrid search ranks passages from docs, audio, and images.
 
 [![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en/install-mcp?name=knowdrive&config=eyJ1cmwiOiJodHRwczovL2tub3dkcml2ZS5haS9hcGkvdjEvbWNwIn0=) [![Install in VS Code](https://img.shields.io/badge/Install_in_VS_Code-0098FF?style=for-the-badge&logo=vscodium&logoColor=white)](https://vscode.dev/redirect/mcp/install?name=knowdrive&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fknowdrive.ai%2Fapi%2Fv1%2Fmcp%22%7D)
 
