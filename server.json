@@ -1,0 +1,21 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "ai.knowdrive/knowdrive-mcp",
+  "title": "KnowDrive",
+  "description": "Multimodal knowledge base for agents: RAG with hybrid semantic search over your private data; returns ranked passages so the corpus stays out of context.",
+  "version": "1.0.0",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://knowdrive.ai/api/v1/mcp",
+      "headers": [
+        {
+          "name": "Authorization",
+          "description": "Optional: set to 'Bearer <your KnowDrive API key>' for headless / API-key use. Interactive MCP clients may instead authenticate via the server's OAuth 2.0 (authorization-code) flow and omit this header.",
+          "isRequired": false,
+          "isSecret": true
+        }
+      ]
+    }
+  ]
+}

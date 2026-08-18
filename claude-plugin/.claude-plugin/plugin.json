@@ -1,0 +1,9 @@
+{
+  "name": "knowdrive",
+  "description": "Multimodal knowledge base for agents: RAG with hybrid semantic search over your private data; returns ranked passages so the corpus stays out of context.",
+  "version": "1.0.0",
+  "license": "MIT",
+  "author": {
+    "name": "KnowDrive"
+  }
+}
