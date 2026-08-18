@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/knowdrive-wordmark.svg" alt="KnowDrive" width="340">
+<img src="assets/KnowDrive_AI_logo_WhiteCircle.svg" alt="KnowDrive" width="340">
 
 # KnowDrive MCP Server
 
