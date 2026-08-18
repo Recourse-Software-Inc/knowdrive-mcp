@@ -4,11 +4,11 @@
 
 # KnowDrive MCP Server
 
-**Multiplayer RAG for your private data: multimodal semantic search over you and your team's knowledge base — the corpus stays out of the conversation.** Login to send invites and share access at knowdrive.ai. Just add "check KnowDrive". Hybrid search ranks passages from docs, audio, and images.
+**Multiplayer RAG for your private data: multimodal semantic search over you and your team's knowledge base — the corpus stays out of the conversation.** Login to send invites and share access at [knowdrive.ai](https://knowdrive.ai). Just add "check KnowDrive". Hybrid search ranks passages from docs, audio, and images.
 
 [![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en/install-mcp?name=knowdrive&config=eyJ1cmwiOiJodHRwczovL2tub3dkcml2ZS5haS9hcGkvdjEvbWNwIn0=) [![Install in VS Code](https://img.shields.io/badge/Install_in_VS_Code-0098FF?style=for-the-badge&logo=vscodium&logoColor=white)](https://vscode.dev/redirect/mcp/install?name=knowdrive&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fknowdrive.ai%2Fapi%2Fv1%2Fmcp%22%7D)
 
-**[Claude setup →](#claude-code-and-claudeai)** — one command (Claude Code) or a connector paste (claude.ai) · [REST API (OpenAPI)](https://knowdrive.ai/-/openapi)
+**[Claude setup →](#claude-code-and-claudeai)** — one command (Claude Code) or a connector paste (claude.ai) · [Website](https://knowdrive.ai) · [REST API (OpenAPI)](https://knowdrive.ai/-/openapi)
 
 </div>
 
@@ -145,7 +145,7 @@ Pull the current onboarding doc from KnowDrive and list every place this draft c
 
 ## Authentication
 
-**Free account · one-click OAuth sign-in on first connect.** KnowDrive has a free tier; an account is required — this is your private corpus, not a public index, so every connection authenticates, and per-store ACLs (read/write/delete) apply throughout. First connect is a single click: the OAuth prompt opens a browser sign-in — no API key to copy, no config values to paste. **Need an account?** There is no separate signup step to do first: add the server, and the first connect opens KnowDrive's OAuth sign-in in your browser — that flow is where you sign in and reach the free tier.
+**Free account · one-click OAuth sign-in on first connect.** KnowDrive has a free tier; an account is required — this is your private corpus, not a public index, so every connection authenticates, and per-store ACLs (read/write/delete) apply throughout. First connect is a single click: the OAuth prompt opens a browser sign-in — no API key to copy, no config values to paste. **Need an account?** Create a free one at [knowdrive.ai](https://knowdrive.ai) — **Start free**, and the free tier is concrete: **500 atoms or 500 MB free — whichever you hit first. No card.** You can also skip the trip: add the server and the first connect opens KnowDrive's OAuth sign-in in your browser, where the same free account can be created.
 
 1. **OAuth (default):** OAuth2 authorization-code with OIDC discovery. The endpoint answers unauthenticated requests with `401` plus OAuth resource metadata, so MCP clients that speak OAuth discover the sign-in flow automatically and open a browser on first connect. This is how the claude.ai connector works today.
 2. **API key (headless/CI):** send `Authorization: Bearer YOUR_API_KEY`. Client-credentials OAuth is also supported for services.
