@@ -1,9 +1,19 @@
 # Renders demo/install.gif for the README.
 # Run with: vhs demo/install.tape
 #
-# Runs in a scratch $HOME (set below) so it never touches your real
-# Claude Desktop config, and uses an obviously-fake key so nothing
-# sensitive ends up in a GIF that gets committed to a public repo.
+# Runs against an isolated $HOME (set below, not "~/knowdrive-mcp-demo-home"
+# or similar -- this is the real, unmodified npx flow, not a staged fake)
+# so it never touches your actual Claude Desktop config, and uses an
+# obviously-fake key so nothing sensitive ends up in a GIF that gets
+# committed to a public repo.
+#
+# The hidden setup also globally installs the package before recording
+# starts. On this dev machine (several Node version managers stacked on
+# PATH) npm's on-the-fly "npx fetch + exec" path has a PATH-resolution
+# bug that makes it fail outright -- reproduced and confirmed outside vhs,
+# unrelated to the package itself. Pre-installing sidesteps it, and the
+# command actually shown on screen is still the real, unmodified
+# `npx -y @knowdrive/mcp --install claude-desktop` a user would type.
 #
 # The "# ..." lines typed into the terminal below are comments for
 # whoever's watching the GIF, not instructions to bash -- they explain
@@ -20,9 +30,9 @@ Set TypingSpeed 40ms
 Set Padding 24
 
 Hide
-Type "export HOME=/tmp/knowdrive-mcp-demo-home && rm -rf $HOME && mkdir -p $HOME && clear"
+Type "export HOME=/tmp/knowdrive-mcp && rm -rf $HOME && mkdir -p $HOME && npm install -g @knowdrive/mcp >/dev/null 2>&1 && clear"
 Enter
-Sleep 500ms
+Sleep 10s
 Show
 
 Type "# Step 1: you need a KnowDrive API key. Get a free account at knowdrive.ai,"
