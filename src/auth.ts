@@ -2,7 +2,7 @@ import { createInterface } from "node:readline/promises";
 import { stdin, stdout } from "node:process";
 import { readConfig, writeConfig, resolveConfig, DEFAULT_BASE_URL, type KnowDriveConfig } from "./config.js";
 
-const KEY_SIGNUP_URL = "https://knowdrive.ai/keys";
+const KEY_SIGNUP_URL = "https://knowdrive.ai/developer-keys/";
 
 /**
  * Never throws. Falls back to an interactive prompt (or, if stdin isn't a

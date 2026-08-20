@@ -17,7 +17,7 @@ Supported --install targets:
 Auth:
   Set KNOWDRIVE_API_KEY in the environment, or run this once interactively
   and it will prompt for a key and save it to ~/.knowdrive/config.json.
-  Generate a key at https://knowdrive.ai/keys
+  Generate a key at https://knowdrive.ai/developer-keys/
 `;
 
 async function main(): Promise<void> {

@@ -29,7 +29,8 @@ it to `~/.knowdrive/config.json`. Restart the client afterward.
 
 ## Manual setup
 
-Get a key at [knowdrive.ai/keys](https://knowdrive.ai/keys), then either:
+Get a free account at [knowdrive.ai](https://knowdrive.ai), then get a key at
+[knowdrive.ai/developer-keys](https://knowdrive.ai/developer-keys/). Then either:
 
 - run `npx -y @knowdrive/mcp` once in a terminal and paste it when prompted, or
 - set `KNOWDRIVE_API_KEY` directly in your client's server config:
