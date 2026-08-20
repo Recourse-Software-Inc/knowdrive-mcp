@@ -1,6 +1,6 @@
 {
   "name": "@knowdrive/mcp",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "1-click MCP server for KnowDrive — run `npx -y @knowdrive/mcp` to give any MCP client (Claude Desktop, Claude Code, Cursor) memory backed by your KnowDrive KnowDB.",
   "type": "module",
   "bin": {

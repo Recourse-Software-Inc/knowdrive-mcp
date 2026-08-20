@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
@@ -5,7 +7,11 @@ import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import type { KnowDriveConfig } from "./config.js";
 
-const PKG_VERSION = "0.1.0";
+// Read from package.json rather than hardcoding, so a version bump can't
+// silently drift out of sync with what the MCP handshake reports.
+const PKG_VERSION: string = JSON.parse(
+  readFileSync(fileURLToPath(new URL("../package.json", import.meta.url)), "utf8")
+).version;
 
 /**
  * knowdrive-mcp is a thin stdio<->HTTP bridge: your MCP client talks stdio
