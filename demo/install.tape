@@ -49,4 +49,5 @@ Enter
 Sleep 4s
 
 Type "# Restart Claude Desktop. It now has a 'knowdrive' MCP server configured."
-Sleep 3s
+Enter
+Sleep 6s
