@@ -7,6 +7,8 @@ backed by your [KnowDrive](https://knowdrive.ai) KnowDB:
 npx -y @knowdrive/mcp
 ```
 
+![Installing @knowdrive/mcp into Claude Desktop with one command](demo/install.gif)
+
 No manual JSON editing required. `@knowdrive/mcp` is a thin stdio↔HTTP bridge:
 your MCP client talks stdio to this process, this process talks Streamable
 HTTP to your KnowDB, carrying your API key. All the real tools — search,
@@ -59,4 +61,5 @@ npm install
 npm run build
 node dist/cli.js --help
 node scripts/smoke-test.mjs   # connects the built server to the real KnowDB and lists its tools
+vhs demo/install.tape         # re-render demo/install.gif (brew install vhs)
 ```
