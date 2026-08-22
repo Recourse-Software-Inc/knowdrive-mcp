@@ -17,6 +17,12 @@
  * Optional offline fallback: set window.RECOURSELLM_CHANGELOG_SNAPSHOT to an
  * array of {id,title,committed_date,author_name,web_url,project_name,project_url}
  * before this script runs; it is rendered only if the live fetch fails.
+ *
+ * Optional "Ongoing work" section: set window.RECOURSELLM_PROJECT_SUMMARIES to
+ * an array of {project, date, summary} (see project-summaries.js, generated
+ * from the team's KnowDrive kd-handoff stream) and a project-cards section is
+ * rendered above the commit feed. KnowDrive is a private API, so these
+ * summaries are baked in at generation time rather than fetched by visitors.
  */
 (function () {
   'use strict';
@@ -71,6 +77,18 @@
     '.rl-cl .rl-proj{background:var(--rl-chip-bg);color:var(--rl-chip-fg);border-radius:5px;padding:1px 7px}',
     '.rl-cl .rl-proj:hover,.rl-cl .rl-sha:hover{text-decoration:underline}',
     '.rl-cl .rl-sha{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px}',
+    '.rl-cl .rl-work{margin:0 0 36px}',
+    '.rl-cl .rl-work h2{font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--rl-fg-soft);',
+    ' margin:0 0 14px;border-bottom:1px solid var(--rl-line);padding-bottom:8px}',
+    '.rl-cl .rl-work-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}',
+    '.rl-cl .rl-card{border:1px solid var(--rl-line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}',
+    '.rl-cl .rl-card-head{display:flex;align-items:baseline;gap:10px}',
+    '.rl-cl .rl-card-head strong{font-size:14.5px;font-weight:600}',
+    '.rl-cl .rl-card-date{margin-left:auto;flex:none;font-size:12px;color:var(--rl-fg-soft)}',
+    '.rl-cl .rl-card p{margin:0;font-size:13.5px;line-height:1.5;color:var(--rl-fg-soft)}',
+    '.rl-cl .rl-work-more{margin-top:12px}',
+    '.rl-cl .rl-feed h2{font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--rl-fg-soft);',
+    ' margin:0 0 14px;border-bottom:1px solid var(--rl-line);padding-bottom:8px}',
     '.rl-cl .rl-state{padding:36px 0;color:var(--rl-fg-soft);text-align:center;font-size:14px}',
     '.rl-cl .rl-foot{margin-top:26px;padding-top:14px;border-top:1px solid var(--rl-line);font-size:12.5px;color:var(--rl-fg-soft)}',
     '.rl-cl .rl-foot a{text-decoration:underline}'
@@ -128,8 +146,53 @@
     return 'other';
   }
 
+  function renderWork(root, opts) {
+    var items = window.RECOURSELLM_PROJECT_SUMMARIES;
+    if (!items || !items.length) return false;
+    items = items.slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+
+    var section = el('section', 'rl-work');
+    section.appendChild(el('h2', null, 'Ongoing work'));
+    var grid = el('div', 'rl-work-grid');
+    var INITIAL = 6;
+
+    function card(it) {
+      var c = el('article', 'rl-card');
+      var head = el('div', 'rl-card-head');
+      head.appendChild(el('strong', null, it.project));
+      var d = new Date(it.date + 'T12:00:00Z');
+      head.appendChild(el('span', 'rl-card-date',
+        'Updated ' + d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })));
+      c.appendChild(head);
+      c.appendChild(el('p', null, it.summary));
+      return c;
+    }
+
+    items.slice(0, INITIAL).forEach(function (it) { grid.appendChild(card(it)); });
+    section.appendChild(grid);
+
+    if (items.length > INITIAL) {
+      var more = el('button', 'rl-filter rl-work-more', 'Show all ' + items.length + ' projects');
+      more.type = 'button';
+      more.addEventListener('click', function () {
+        items.slice(INITIAL).forEach(function (it) { grid.appendChild(card(it)); });
+        more.remove();
+      });
+      section.appendChild(more);
+    }
+
+    root.appendChild(section);
+    return true;
+  }
+
   function render(root, commits, opts) {
     root.textContent = '';
+
+    if (renderWork(root, opts)) {
+      var feedHead = el('div', 'rl-feed');
+      feedHead.appendChild(el('h2', null, 'Latest changes'));
+      root.appendChild(feedHead);
+    }
 
     var toolbar = el('div', 'rl-toolbar');
     var groups = [
