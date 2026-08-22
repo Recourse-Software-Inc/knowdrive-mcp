@@ -26,7 +26,22 @@ days**, fetched live in the visitor's browser from the GitLab public REST API.
 | File | What it is |
 | --- | --- |
 | `recoursellm-changelog.js` | The whole widget: fetch + render + scoped CSS. |
+| `project-summaries.js` | Baked "Ongoing work" cards — one public-facing summary per project, condensed from each project's newest kd-handoff in KnowDrive (RSI Share store). |
 | `changelog.html` | A complete standalone changelog page using the widget. |
+
+## The Ongoing work section
+
+When `project-summaries.js` is loaded before the widget, an "Ongoing work"
+grid of project cards renders above the commit feed (first 6, with a
+show-all toggle). KnowDrive is a private, authenticated API, so visitors'
+browsers can't query it — the summaries are baked in at generation time.
+
+To refresh them, ask Claude (with the KnowDrive MCP connected) to list files
+tagged `kd-handoff` in the RSI Share store, read the newest handoff per
+`project:` tag, and rewrite the array in `project-summaries.js`. **Review the
+copy before deploying**: handoffs are internal working documents, and the
+published summaries must stay public-appropriate (no incident details,
+commit hashes, or internal strategy).
 
 ## Integrating into the existing changelog page
 
