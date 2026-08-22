@@ -223,7 +223,7 @@
     drawList();
 
     var foot = el('div', 'rl-foot');
-    foot.appendChild(document.createTextNode('Live from GitLab · '));
+    foot.appendChild(document.createTextNode(opts.snapshot ? 'From a saved snapshot · ' : 'Live from GitLab · '));
     var gl = el('a', null, 'gitlab.com/' + opts.group);
     gl.href = 'https://gitlab.com/' + opts.group;
     gl.target = '_blank';
@@ -270,6 +270,7 @@
         if (window.console && console.error) console.error('recoursellm-changelog:', err);
         var snapshot = window.RECOURSELLM_CHANGELOG_SNAPSHOT;
         if (snapshot && snapshot.length) {
+          opts.snapshot = true;
           show(root, snapshot, opts);
           return;
         }
