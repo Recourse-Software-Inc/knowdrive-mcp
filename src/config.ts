@@ -7,7 +7,7 @@ export interface KnowDriveConfig {
   baseUrl: string;
 }
 
-const DEFAULT_BASE_URL = "https://dev.knowdrive.ai";
+const DEFAULT_BASE_URL = "https://knowdrive.ai";
 
 export const CONFIG_DIR = join(homedir(), ".knowdrive");
 export const CONFIG_PATH = join(CONFIG_DIR, "config.json");

@@ -52,7 +52,7 @@ Get a free account at [knowdrive.ai](https://knowdrive.ai), then get a key at
 | Variable              | Purpose                                             |
 | ---------------------- | ---------------------------------------------------- |
 | `KNOWDRIVE_API_KEY`    | API key. Takes priority over the saved config file. |
-| `KNOWDRIVE_BASE_URL`   | Override the KnowDrive host (default `https://dev.knowdrive.ai`). |
+| `KNOWDRIVE_BASE_URL`   | Override the KnowDrive host (default `https://knowdrive.ai`). |
 | `KNOWDRIVE_MCP_PATH`   | Override the remote MCP path (default `/api/v1/mcp`). |
 
 ## Development
