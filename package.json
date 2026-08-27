@@ -29,9 +29,13 @@
     "claude"
   ],
   "license": "MIT",
+  "homepage": "https://knowdrive.ai",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/knowdrive/knowdrive-mcp.git"
+    "url": "git+https://github.com/Recourse-Software-Inc/knowdrive-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Recourse-Software-Inc/knowdrive-mcp/issues"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0"
