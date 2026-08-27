@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/KnowDrive_AI_logo_WhiteCircle.svg" alt="KnowDrive" width="340">
+<img src="https://raw.githubusercontent.com/Recourse-Software-Inc/knowdrive-mcp/main/assets/KnowDrive_AI_logo_WhiteCircle.svg" alt="KnowDrive" width="340">
 
 # KnowDrive MCP Server
 
@@ -97,7 +97,7 @@ One command wires it into a client's config (backing up whatever was there first
 npx -y @knowdrive/mcp --install claude-desktop   # or: cursor | claude-code
 ```
 
-![Installing the KnowDrive npm bridge into Claude Desktop with one command](demo/install.gif)
+![Installing the KnowDrive npm bridge into Claude Desktop with one command](https://raw.githubusercontent.com/Recourse-Software-Inc/knowdrive-mcp/main/demo/install.gif)
 
 It prompts for an API key on first run and saves it to `~/.knowdrive/config.json`. Grab one at [knowdrive.ai/developer-keys](https://knowdrive.ai/developer-keys/). To wire it up by hand instead:
 
