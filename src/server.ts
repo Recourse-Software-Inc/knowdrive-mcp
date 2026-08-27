@@ -38,6 +38,24 @@ export async function runServer(config: KnowDriveConfig): Promise<void> {
     process.exit(1);
   }
 
+  // A real MCP client pipes stdio and never sets a TTY. A human running this
+  // command directly does — and otherwise sees nothing at all after this
+  // point, since the process just sits waiting for JSON-RPC a terminal never
+  // sends. Explain what's happening instead of leaving them staring at an
+  // idle cursor.
+  if (process.stdin.isTTY) {
+    const { tools } = await remote.listTools();
+    console.error(
+      `KnowDrive: connected — ${tools.length} tools available from ${config.baseUrl}.\n\n` +
+        `This command is meant to be launched BY your MCP client (Claude Desktop,\n` +
+        `Cursor, Claude Code) — not run directly. It's now waiting on stdio for a\n` +
+        `client to talk to it, which a terminal never will.\n\n` +
+        `To wire it into a client automatically instead, run:\n` +
+        `  npx -y @knowdrive/mcp --install <client>   (claude-desktop | cursor | claude-code)\n\n` +
+        `Press Ctrl+C to exit.`
+    );
+  }
+
   const local = new Server({ name: "knowdrive", version: PKG_VERSION }, { capabilities: { tools: {} } });
 
   local.setRequestHandler(ListToolsRequestSchema, async () => remote.listTools());
