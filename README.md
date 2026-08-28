@@ -113,10 +113,18 @@ It prompts for an API key on first run and saves it to `~/.knowdrive/config.json
 }
 ```
 
+To point at a different KnowDrive deployment, pass `--host` (a bare hostname is treated as `https`). Combined with `--install`, the host is written into the client config, so the installed server keeps talking to it:
+
+```bash
+npx -y @knowdrive/mcp --host public.knowdrive.ai --install claude-desktop
+```
+
+Keys are issued per deployment, so a key minted on one host may not authenticate against another.
+
 | Variable | Purpose |
 |---|---|
 | `KNOWDRIVE_API_KEY` | API key. Takes priority over the saved config file. |
-| `KNOWDRIVE_BASE_URL` | Override the KnowDrive host (default `https://knowdrive.ai`). |
+| `KNOWDRIVE_BASE_URL` | Override the KnowDrive host (default `https://knowdrive.ai`). `--host` wins over this. |
 | `KNOWDRIVE_MCP_PATH` | Override the remote MCP path (default `/api/v1/mcp`). |
 
 Source for the bridge lives in [`src/`](src) in this repository. Build it yourself with `npm install && npm run build`; `npm run smoke` connects the built server to the live endpoint and lists its tools.

@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync, copyFileSync } from "node:fs";
 import { homedir, platform } from "node:os";
 import { dirname, join } from "node:path";
+import { DEFAULT_BASE_URL } from "./config.js";
 
 interface ClientTarget {
   id: string;
@@ -31,11 +32,19 @@ export function knownClients(): ClientTarget[] {
   ];
 }
 
-function serverEntry(apiKey: string) {
+/**
+ * The client launches this with a bare environment, so anything the bridge
+ * needs has to be written into the entry itself. Omitting the host when it's
+ * the default keeps the common config clean; carrying it when it isn't is the
+ * difference between reaching your host and silently hitting production.
+ */
+function serverEntry(apiKey: string, baseUrl: string) {
+  const env: Record<string, string> = { KNOWDRIVE_API_KEY: apiKey };
+  if (baseUrl !== DEFAULT_BASE_URL) env.KNOWDRIVE_BASE_URL = baseUrl;
   return {
     command: "npx",
     args: ["-y", "@knowdrive/mcp"],
-    env: { KNOWDRIVE_API_KEY: apiKey },
+    env,
   };
 }
 
@@ -44,7 +53,11 @@ function serverEntry(apiKey: string) {
  * whatever was there first. Reads the existing JSON rather than overwriting
  * it wholesale so other servers the user already configured survive.
  */
-export function installToClient(clientId: string, apiKey: string): { configPath: string; backupPath: string | null } {
+export function installToClient(
+  clientId: string,
+  apiKey: string,
+  baseUrl: string = DEFAULT_BASE_URL
+): { configPath: string; backupPath: string | null } {
   const target = knownClients().find((c) => c.id === clientId);
   if (!target) {
     const ids = knownClients().map((c) => c.id).join(", ");
@@ -69,7 +82,7 @@ export function installToClient(clientId: string, apiKey: string): { configPath:
   }
 
   const servers = (existing[target.serversKey] as Record<string, unknown> | undefined) ?? {};
-  servers["knowdrive"] = serverEntry(apiKey);
+  servers["knowdrive"] = serverEntry(apiKey, baseUrl);
   existing[target.serversKey] = servers;
 
   writeFileSync(target.configPath, JSON.stringify(existing, null, 2) + "\n");
