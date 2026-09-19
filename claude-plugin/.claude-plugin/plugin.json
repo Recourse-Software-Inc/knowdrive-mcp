@@ -1,6 +1,6 @@
 {
   "name": "knowdrive",
-  "description": "Multiplayer RAG: multimodal semantic search over you and your team's private knowledge base.",
+  "description": "Attention-as-a-Service: multimodal semantic search over you and your team's private knowledge base.",
   "version": "1.0.0",
   "homepage": "https://knowdrive.ai",
   "license": "MIT",
