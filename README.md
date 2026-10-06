@@ -143,7 +143,7 @@ Source for the bridge lives in [`src/`](src) in this repository. Build it yourse
 
 ## Tools
 
-The server exposes ≈39 tools, but **most agents only need six**: `search_vector_store`, `search_atoms`, `list_vector_stores`, `get_capabilities`, `whoami`, and `ingest_text`. Call `get_capabilities` once at session start so your client adapts to the deployment's feature flags, limits, and enabled modalities (this deployment: text, vision, **and** audio embeddings all enabled).
+The server exposes ≈40 tools and 4 prompts, but **most agents only need six**: `search_vector_store`, `search_atoms`, `list_vector_stores`, `get_capabilities`, `whoami`, and `ingest_text`. Call `get_capabilities` once at session start so your client adapts to the deployment's feature flags, limits, and enabled modalities (this deployment: text, vision, **and** audio embeddings all enabled).
 
 **Safety at a glance:** every `search_*`, `list_*`, `get_*`, `read_*`, `stat_*`, and `whoami` call is read-only in behavior — it never modifies the corpus. Ingest and upload tools are additive and versioned (a re-ingest supersedes, it never overwrites). The **destructive** tools to handle with care are the `delete_*` family — `delete_file`, `delete_files`, `delete_vector_store`.
 
@@ -152,9 +152,9 @@ The server exposes ≈39 tools, but **most agents only need six**: `search_vecto
 Hybrid, vector, or full-text search over a store, returning a ranked retrieval window. Read-only.
 
 - **Best for:** answering any question whose ground truth lives in the user's corpus — decisions, contracts, meeting audio, screenshots, specs.
-- **Returns:** a ranked window of matching atoms — *a window is not the corpus*; page deeper with `offset` before concluding something isn't there.
+- **Returns:** a ranked window of matching **atoms** — byte-faithful fragments, each carrying its provenance: source file, version, and byte range or timestamp. The citation is checkable, so you quote what the source actually says instead of paraphrasing. *A window is not the corpus* — page deeper with `offset` before concluding something isn't there.
 - **Query style & call budget:** describe the content you want, not keywords. Good: `"indemnification cap agreed with Acme in the signed MSA"`. Bad: `"acme contract"`. At most 3 searches per question — refine the query or advance `offset` rather than re-searching from scratch. Never include sensitive or confidential information — API keys, passwords, credentials, personal data — in a query.
-- **Parameters:** `vector_store_id` (required), `query` (required, non-empty), `mode` (`hybrid` | `vector` | `fts`; server default applies when omitted), `search_field` (`text` default | `vision` | `audio`), `max_num_results` (1–50; server default when omitted — check `get_capabilities`), `offset` (default 0), `max_distance` (cosine-distance ceiling, default 1.1 — raise for cross-modal audio queries), `include_superseded` (default `false`).
+- **Parameters:** `vector_store_id` (required), `query` (required, non-empty), `mode` (`hybrid` | `vector` | `fts`; **this tool defaults to `vector`** — `search_atoms` defaults to `hybrid`), `search_field` (`text` default | `vision` | `audio`), `max_num_results` (1–10000, default 25; `hybrid` is bounded at 200 however high you set it — check `get_capabilities`), `offset` (default 0), `max_distance` (cosine-distance ceiling, default 1.1 — raise for cross-modal audio queries), `include_superseded` (default `false`).
 - **Workflow:** call `list_vector_stores` first if you don't know the store; follow up with `read_file_content_by_path` when a snippet isn't enough.
 
 ### `ingest_text` — get knowledge in
@@ -174,18 +174,18 @@ Index text straight into a store, versioned by path: re-ingesting the same path 
 - **`whoami`** — identity check. **Best for:** confirming who you're signed in as before searching or ingesting. **Returns:** the caller's identity and entitlements (which stores, which rights).
 
 <details>
-<summary><strong>Everything else</strong> — the rest of the ≈39-tool surface</summary>
+<summary><strong>Everything else</strong> — the rest of the ≈40-tool surface</summary>
 
 | Group | Tools | Reach past the heroes when… |
 |---|---|---|
 | Identity & discovery | `whoami` · `get_capabilities` · `mint_token` | starting a session (capabilities) or handing a sub-agent a least-privilege scoped PASETO token |
-| Stores | `list_vector_stores` · `get_vector_store` · `stat_vector_store` · `delete_vector_store` · `list_vector_store_tags` | you don't know which stores or tags exist yet |
+| Stores | `list_vector_stores` · `get_vector_store` · `stat_vector_store` · `create_vector_store` · `delete_vector_store` · `list_vector_store_tags` | you don't know which stores or tags exist yet, or you're starting a new project — one store per project, created with `create_vector_store` |
 | Ingest | `bulk_ingest_text` · `ingest_file_from_url` · `bulk_ingest_from_urls` · `upload_file` · `upload_create`/`upload_part`/`upload_complete`/`upload_cancel` · `wait_for_file_status` | ingesting many documents, binary files, or anything over 1 MiB |
-| Files | `list_files` · `get_file`/`get_file_by_path` · `read_file_content`/`read_file_content_by_path` · `list_file_atoms` · `update_file_tags` · `retag_file(s)` · `remime_file(s)` · `revert_file` · `mutate_files` · `delete_file(s)` | a search snippet isn't enough — `read_file_content_by_path` fetches the whole file by store + path (ranged reads, 1 MiB per chunk) — or you're doing corpus housekeeping (tags, versions, deletion) |
+| Files | `list_files` · `get_file`/`get_file_by_path` · `read_file_content`/`read_file_content_by_path` · `read_atom_binary` · `list_file_atoms` · `update_file_tags` · `retag_file(s)` · `remime_file(s)` · `revert_file` · `mutate_files` · `delete_file(s)` | a search snippet isn't enough — `read_file_content_by_path` fetches the whole file by store + path (ranged reads, 1 MiB per chunk) — or you're doing corpus housekeeping (tags, versions, deletion) |
 | Search | `search_vector_store` · `search_atoms` | both heroes — documented above |
 | Agent-native | `list_llm_skills` · `list_llm_tools` · `get_llm_capability` | the corpus stores tool & skill descriptors as first-class content — it can teach the agent how to use itself |
 
-Tags are free-form and filterable (`tags_all`/`tags_any`/`tags_none`) across listing and search endpoints; values are case-folded.
+Tags are free-form and filterable (`tags_all`/`tags_any`/`tags_none`) across listing and search endpoints; values are case-folded. `list_vector_store_tags` also accepts `tag_query`, a boolean DSL (`,` AND · `|` OR · `!` NOT · parens · globs). **Prompts** ship too: `search_then_summarize`, `audit_file`, `find_related`, `discover_capabilities`.
 
 </details>
 
@@ -207,7 +207,7 @@ Pull the current onboarding doc from KnowDrive and list every place this draft c
 
 ## Limits (honest ones)
 
-- A search returns a **window**, not the corpus — the MCP search tool returns at most 50 results per call (`max_num_results`); page deeper with `offset`. REST list/search pages cap at 100 items/page.
+- A search returns a **window**, not the corpus. `hybrid` is a *bounded* ranked window — capped at 200 results no matter how high `max_num_results` goes; `vector` and `fts` page to exhaustion instead. Default page is 25. Page deeper with `offset`, and prefer widening a query over re-asking it.
 - Read/write chunks cap at 1 MiB; `wait_for_file_status` waits ≤45 s per call; 4 concurrent fetches (deployment limits — `get_capabilities` reports the connected deployment's values).
 - Some tools are feature-flagged per deployment (e.g. `url_ingest` is off on this one) — check `get_capabilities` rather than assuming.
 - The search and ingest engines are hosted — the endpoint above is the canonical production endpoint, and the [npm bridge](#npm-bridge-stdio--headless) is a transport shim to it, not a local server. Nothing indexes or searches on your machine either way.
@@ -216,7 +216,7 @@ Pull the current onboarding doc from KnowDrive and list every place this draft c
 
 KnowDrive is a hosted, account-gated service operated by Recourse Software Inc. This listing is the official first-party listing. The `knowdrive-mcp` repository contains listing, client-configuration, and documentation materials, plus the source of the `@knowdrive/mcp` npm bridge — a client-side transport shim. The KnowDB backend (ingestion, embedding, and search engines) is closed-source and runs on KnowDrive's hosted infrastructure; no server source lives here. No corpus data is stored in this repository, and an account is required before the first tool call — accounts have a free tier, and first connect is a single-click OAuth 2.0 sign-in.
 
-**Privacy note:** search queries and ingested content are sent to the hosted KnowDrive service. Do not include sensitive or confidential information such as API keys, passwords, credentials, or personal data in your queries.
+**Privacy note:** search queries and ingested content are sent to the hosted KnowDrive service. Content is isolated per store, encrypted at rest, and **is not used to train anything**; export is first-class, so content, metadata and provenance all come back out through the API. Do not include sensitive or confidential information such as API keys, passwords, credentials, or personal data in your queries.
 
 ## License
 
