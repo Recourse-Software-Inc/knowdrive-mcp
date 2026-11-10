@@ -5,31 +5,47 @@
 # before anything is published).
 #
 #   npm version patch --no-git-tag-version   # or edit the three versions by hand
-#   git commit -am "Release 0.1.8" && git tag v0.1.8 && git push origin main v0.1.8
+#   git commit -am "Release 0.1.9" && git tag v0.1.9 && git push origin main v0.1.9
+#
+# Every publish step is idempotent: it skips work that is already done (npm
+# version exists, registry version exists, GitHub release exists). So a run that
+# died part-way can be finished from the Actions tab: "Run workflow" with
+# mode=release re-runs it for the version in package.json on main (the vX.Y.Z tag
+# must already exist). mode=check only tests npm trusted publishing.
 #
 # One-time setup (repo Settings → Secrets and variables → Actions):
-#   - npm: EITHER configure npm trusted publishing for @knowdrive/mcp
-#     (npmjs.com → package → Settings → Trusted publishing → GitHub Actions,
-#     repo Recourse-Software-Inc/knowdrive-mcp, workflow release.yml) — no secret
-#     needed — OR add an NPM_TOKEN secret (automation token, publish rights).
+#   - NPM_TOKEN: a granular npm token, read+write on @knowdrive/mcp only, with
+#     "bypass two-factor authentication" (CI cannot answer an OTP prompt).
+#     Trusted publishing (no secret) is the goal, but npm cannot yet accept
+#     GitHub's immutable OIDC subjects, which this repo (created 2026-08-18)
+#     uses: npm/cli#9969. Once that is fixed, delete NPM_TOKEN and the publish
+#     step falls back to OIDC by itself; mode=check tells you when it works.
 #   - MCP_REGISTRY_PRIVATE_KEY: the hex Ed25519 private key whose public half is
-#     the `v=MCPv1; k=ed25519; p=…` TXT record at the knowdrive.ai apex. This is
-#     what proves the ai.knowdrive/* namespace; docs/registry-key.md explains it.
+#     the `v=MCPv1; k=ed25519; p=…` TXT record at the knowdrive.ai apex. It proves
+#     the ai.knowdrive/* namespace; docs/registry-key.md explains it.
 #
-# Order matters: the registry checks that the npm package it lists carries a
-# matching "mcpName", so npm must be published first.
+# Order matters: the registry checks that the npm package it lists exists and
+# carries a matching "mcpName", so npm must be published (and visible) first.
 name: Release
 
 on:
   push:
     tags: ["v*"]
-  # Manual run = trusted-publishing check only: does npm accept this workflow's
-  # OIDC identity for @knowdrive/mcp? Publishes nothing.
   workflow_dispatch:
+    inputs:
+      mode:
+        description: "check = test npm trusted publishing only; release = finish/redo the release for package.json's version"
+        type: choice
+        options: [check, release]
+        default: check
 
 permissions:
   contents: write   # create the GitHub release
-  id-token: write   # npm provenance + trusted publishing
+  id-token: write   # npm provenance (+ trusted publishing once npm/cli#9969 is fixed)
+
+env:
+  RELEASE: ${{ github.event_name == 'push' || inputs.mode == 'release' }}
+  PKG: "@knowdrive/mcp"
 
 jobs:
   release:
@@ -47,9 +63,9 @@ jobs:
 
       # Exchanges this run's GitHub OIDC token with npm exactly as `npm publish`
       # would, and prints the claims npm matches against the package's Trusted
-      # Publisher settings (repository, workflow file) plus npm's answer. Neither
-      # token is printed. On a tag push it is informational; a manual run stops here.
+      # Publisher settings plus npm's answer. Neither token is printed.
       - name: npm trusted-publishing check
+        if: env.RELEASE != 'true'
         run: |
           idt=$(curl -fsS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
             "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=npm:registry.npmjs.org" | python3 -c 'import sys,json;print(json.load(sys.stdin)["value"])')
@@ -58,55 +74,73 @@ jobs:
           import sys,json,base64
           p=sys.stdin.read().strip().split(".")[1]; p+="="*(-len(p)%4)
           c=json.loads(base64.urlsafe_b64decode(p))
-          print(json.dumps({k:c.get(k) for k in ["repository","repository_owner","workflow_ref","job_workflow_ref","ref","environment","event_name"]},indent=1))'
+          print(json.dumps({k:c.get(k) for k in ["sub","repository","repository_owner","workflow_ref","job_workflow_ref","ref","environment","event_name"]},indent=1))'
           code=$(curl -sS -o resp.json -w '%{http_code}' -X POST -H "Authorization: Bearer $idt" \
             "https://registry.npmjs.org/-/npm/v1/oidc/token/exchange/package/@knowdrive%2fmcp")
           echo "npm OIDC exchange: HTTP $code"
           python3 -c 'import json;d=json.load(open("resp.json"));d.pop("token",None);print(json.dumps(d))' 2>/dev/null || head -c 400 resp.json
           rm -f resp.json
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            [ "$code" = "201" ] || [ "$code" = "200" ]; exit $?
-          fi
+          [ "$code" = "201" ] || [ "$code" = "200" ]
 
-      - name: Tag, package.json and server.json agree
-        if: github.event_name == 'push'
+      - name: Resolve version and check it agrees everywhere
+        if: env.RELEASE == 'true'
         run: |
-          tag="${GITHUB_REF_NAME#v}"
           pkg=$(node -p "require('./package.json').version")
           srv=$(node -p "require('./server.json').version")
           srvpkg=$(node -p "require('./server.json').packages[0].version")
           mcp=$(node -p "require('./package.json').mcpName")
           srvname=$(node -p "require('./server.json').name")
+          if [ "${{ github.event_name }}" = "push" ]; then tag="$GITHUB_REF_NAME"; else tag="v$pkg"; fi
           echo "tag=$tag package=$pkg server=$srv server.packages=$srvpkg mcpName=$mcp server.name=$srvname"
-          [ "$tag" = "$pkg" ] && [ "$tag" = "$srv" ] && [ "$tag" = "$srvpkg" ] && [ "$mcp" = "$srvname" ] \
-            || { echo "::error::version or name mismatch — fix before tagging"; exit 1; }
+          [ "${tag#v}" = "$pkg" ] && [ "$pkg" = "$srv" ] && [ "$pkg" = "$srvpkg" ] && [ "$mcp" = "$srvname" ] \
+            || { echo "::error::version or name mismatch — fix before releasing"; exit 1; }
+          git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null \
+            || { echo "::error::tag $tag does not exist — push it first"; exit 1; }
+          echo "VERSION=$pkg" >> "$GITHUB_ENV"
+          echo "TAG=$tag" >> "$GITHUB_ENV"
 
-      - if: github.event_name == 'push'
+      - if: env.RELEASE == 'true'
         run: npm ci
-      - if: github.event_name == 'push'
+      - if: env.RELEASE == 'true'
         run: npm run build
 
       # Trusted publishing needs npm >= 11.5.1; Node 22 ships npm 10.
-      - if: github.event_name == 'push'
+      - if: env.RELEASE == 'true'
         run: npm install -g npm@11
 
-      - name: Publish to npm
-        if: github.event_name == 'push'
+      - name: Publish to npm (skipped if this version is already published)
+        if: env.RELEASE == 'true'
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
+          if [ "$(npm view "$PKG@$VERSION" version 2>/dev/null)" = "$VERSION" ]; then
+            echo "$PKG@$VERSION is already on npm — skipping"; exit 0
+          fi
           if [ -n "$NPM_TOKEN" ]; then
             npm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"
-            npm publish --provenance --access public
-          else
-            npm publish --provenance --access public   # npm trusted publishing (OIDC)
           fi
+          npm publish --provenance --access public   # token if set, else trusted publishing (OIDC)
 
-      - name: Validate and publish to the MCP Registry
-        if: github.event_name == 'push'
+      # The registry rejects a package version npm is not serving yet; a fresh
+      # publish can take a minute or two to appear (seen on the first v0.1.8 run).
+      - name: Wait for npm to serve the version
+        if: env.RELEASE == 'true'
+        run: |
+          for i in $(seq 1 30); do
+            [ "$(npm view "$PKG@$VERSION" version 2>/dev/null)" = "$VERSION" ] && { echo "visible after ~$((i*10-10))s"; exit 0; }
+            sleep 10
+          done
+          echo "::error::$PKG@$VERSION still not visible on npm after 5 minutes"; exit 1
+
+      - name: Publish to the MCP Registry (skipped if this version is already listed)
+        if: env.RELEASE == 'true'
         env:
           MCP_REGISTRY_PRIVATE_KEY: ${{ secrets.MCP_REGISTRY_PRIVATE_KEY }}
         run: |
+          name=$(node -p "require('./server.json').name")
+          listed=$(curl -fsS "https://registry.modelcontextprotocol.io/v0.1/servers?search=$name" \
+            | python3 -c "import sys,json; print(any(s.get('server',{}).get('name')=='$name' and s.get('server',{}).get('version')=='$VERSION' for s in json.load(sys.stdin).get('servers',[])))")
+          if [ "$listed" = "True" ]; then echo "$name@$VERSION is already in the registry — skipping"; exit 0; fi
           [ -n "$MCP_REGISTRY_PRIVATE_KEY" ] || { echo "::error::MCP_REGISTRY_PRIVATE_KEY secret is not set"; exit 1; }
           curl -fsSL https://github.com/modelcontextprotocol/registry/releases/download/v1.8.9/mcp-publisher_linux_amd64.tar.gz \
             | tar xz mcp-publisher
@@ -114,8 +148,10 @@ jobs:
           ./mcp-publisher login dns --domain knowdrive.ai --private-key "$MCP_REGISTRY_PRIVATE_KEY"
           ./mcp-publisher publish
 
-      - name: GitHub release
-        if: github.event_name == 'push'
+      - name: GitHub release (skipped if it already exists)
+        if: env.RELEASE == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then echo "release $TAG exists — skipping"; exit 0; fi
+          gh release create "$TAG" --verify-tag --title "$TAG" --generate-notes
