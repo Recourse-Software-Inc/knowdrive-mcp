@@ -4,7 +4,7 @@
 
 # KnowDrive MCP Server
 
-**Attention-as-a-Service for your private data: multimodal semantic search over you and your team's knowledge base — the corpus stays out of the conversation.** Login to send invites and share access at [knowdrive.ai](https://knowdrive.ai). Just add "check KnowDrive". Hybrid search ranks passages from docs, audio, and images.
+**A private, multimodal knowledge store for your agents.** Drop in documents, images, recordings and video; your agent searches them over one MCP endpoint and gets back exact, cited fragments — source file, version, and byte range or timestamp — instead of re-reading whole files. Hybrid (vector + full-text) search, OAuth sign-in, free tier with no card at [knowdrive.ai](https://knowdrive.ai). Just add "check KnowDrive".
 
 [![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en/install-mcp?name=knowdrive&config=eyJ1cmwiOiJodHRwczovL2tub3dkcml2ZS5haS9hcGkvdjEvbWNwIn0=) [![Install in VS Code](https://img.shields.io/badge/Install_in_VS_Code-0098FF?style=for-the-badge&logo=vscodium&logoColor=white)](https://vscode.dev/redirect/mcp/install?name=knowdrive&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fknowdrive.ai%2Fapi%2Fv1%2Fmcp%22%7D)
 

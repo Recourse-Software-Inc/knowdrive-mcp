@@ -1,7 +1,8 @@
 {
   "name": "@knowdrive/mcp",
-  "version": "0.1.6",
-  "description": "1-click MCP server for KnowDrive — run `npx -y @knowdrive/mcp` to give any MCP client (Claude Desktop, Claude Code, Cursor) memory backed by your KnowDrive KnowDB.",
+  "version": "0.1.7",
+  "mcpName": "ai.knowdrive/knowdrive-mcp",
+  "description": "Private, multimodal knowledge store for agents: hybrid search over your docs, images, audio and video with cited, provenance-backed results. `npx -y @knowdrive/mcp` bridges any stdio MCP client to the hosted KnowDrive server.",
   "type": "module",
   "bin": {
     "knowdrive-mcp": "dist/cli.js"
@@ -26,7 +27,13 @@
     "model-context-protocol",
     "knowdrive",
     "memory",
-    "claude"
+    "claude",
+    "knowledge-base",
+    "semantic-search",
+    "hybrid-search",
+    "rag",
+    "citations",
+    "multimodal"
   ],
   "license": "MIT",
   "homepage": "https://knowdrive.ai",

@@ -1,0 +1,84 @@
+# Release @knowdrive/mcp: npm, then the official MCP Registry, then a GitHub release.
+#
+# Trigger: push a tag vX.Y.Z whose X.Y.Z equals package.json "version", server.json
+# "version" and server.json packages[0].version (checked below; a mismatch fails
+# before anything is published).
+#
+#   npm version patch --no-git-tag-version   # or edit the three versions by hand
+#   git commit -am "Release 0.1.8" && git tag v0.1.8 && git push origin main v0.1.8
+#
+# One-time setup (repo Settings → Secrets and variables → Actions):
+#   - npm: EITHER configure npm trusted publishing for @knowdrive/mcp
+#     (npmjs.com → package → Settings → Trusted publishing → GitHub Actions,
+#     repo Recourse-Software-Inc/knowdrive-mcp, workflow release.yml) — no secret
+#     needed — OR add an NPM_TOKEN secret (automation token, publish rights).
+#   - MCP_REGISTRY_PRIVATE_KEY: the hex Ed25519 private key whose public half is
+#     the `v=MCPv1; k=ed25519; p=…` TXT record at the knowdrive.ai apex. This is
+#     what proves the ai.knowdrive/* namespace; docs/registry-key.md explains it.
+#
+# Order matters: the registry checks that the npm package it lists carries a
+# matching "mcpName", so npm must be published first.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write   # create the GitHub release
+  id-token: write   # npm provenance + trusted publishing
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      - name: Tag, package.json and server.json agree
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          pkg=$(node -p "require('./package.json').version")
+          srv=$(node -p "require('./server.json').version")
+          srvpkg=$(node -p "require('./server.json').packages[0].version")
+          mcp=$(node -p "require('./package.json').mcpName")
+          srvname=$(node -p "require('./server.json').name")
+          echo "tag=$tag package=$pkg server=$srv server.packages=$srvpkg mcpName=$mcp server.name=$srvname"
+          [ "$tag" = "$pkg" ] && [ "$tag" = "$srv" ] && [ "$tag" = "$srvpkg" ] && [ "$mcp" = "$srvname" ] \
+            || { echo "::error::version or name mismatch — fix before tagging"; exit 1; }
+
+      - run: npm ci
+      - run: npm run build
+
+      # Trusted publishing needs npm >= 11.5.1; Node 22 ships npm 10.
+      - run: npm install -g npm@11
+
+      - name: Publish to npm
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -n "$NPM_TOKEN" ]; then
+            NODE_AUTH_TOKEN="$NPM_TOKEN" npm publish --provenance --access public
+          else
+            npm publish --provenance --access public   # npm trusted publishing (OIDC)
+          fi
+
+      - name: Validate and publish to the MCP Registry
+        env:
+          MCP_REGISTRY_PRIVATE_KEY: ${{ secrets.MCP_REGISTRY_PRIVATE_KEY }}
+        run: |
+          [ -n "$MCP_REGISTRY_PRIVATE_KEY" ] || { echo "::error::MCP_REGISTRY_PRIVATE_KEY secret is not set"; exit 1; }
+          curl -fsSL https://github.com/modelcontextprotocol/registry/releases/download/v1.8.9/mcp-publisher_linux_amd64.tar.gz \
+            | tar xz mcp-publisher
+          ./mcp-publisher validate
+          ./mcp-publisher login dns --domain knowdrive.ai --private-key "$MCP_REGISTRY_PRIVATE_KEY"
+          ./mcp-publisher publish
+
+      - name: GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes

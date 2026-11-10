@@ -1,0 +1,10 @@
+{
+  "name": "knowdrive",
+  "version": "1.0.0",
+  "description": "Search your private docs, images, audio and video from Gemini CLI, with cited, provenance-backed results.",
+  "mcpServers": {
+    "knowdrive": {
+      "httpUrl": "https://knowdrive.ai/api/v1/mcp"
+    }
+  }
+}

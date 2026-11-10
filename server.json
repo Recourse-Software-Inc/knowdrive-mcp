@@ -2,14 +2,38 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "ai.knowdrive/knowdrive-mcp",
   "title": "KnowDrive",
-  "description": "Attention-as-a-Service: multimodal semantic search over you and your team's private knowledge base.",
+  "description": "Private, multimodal knowledge store for agents: hybrid search with cited, provenance-backed results.",
   "websiteUrl": "https://knowdrive.ai",
-  "version": "1.0.0",
+  "version": "0.1.7",
   "repository": {
     "url": "https://github.com/Recourse-Software-Inc/knowdrive-mcp",
     "source": "github",
     "id": "1337981344"
   },
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@knowdrive/mcp",
+      "version": "0.1.7",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "KNOWDRIVE_API_KEY",
+          "description": "KnowDrive API key (kd_\u2026). Mint one at https://knowdrive.ai/developer-keys, or let an agent onboard itself (see https://knowdrive.ai/llms.txt).",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "KNOWDRIVE_BASE_URL",
+          "description": "KnowDrive deployment to connect to. Defaults to https://knowdrive.ai.",
+          "isRequired": false,
+          "default": "https://knowdrive.ai"
+        }
+      ]
+    }
+  ],
   "remotes": [
     {
       "type": "streamable-http",
