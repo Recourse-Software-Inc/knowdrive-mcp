@@ -60,7 +60,7 @@ jobs:
           c=json.loads(base64.urlsafe_b64decode(p))
           print(json.dumps({k:c.get(k) for k in ["repository","repository_owner","workflow_ref","job_workflow_ref","ref","environment","event_name"]},indent=1))'
           code=$(curl -sS -o resp.json -w '%{http_code}' -X POST -H "Authorization: Bearer $idt" \
-            "https://registry.npmjs.org/-/npm/v1/oidc/token/exchange/package/%40knowdrive%2Fmcp")
+            "https://registry.npmjs.org/-/npm/v1/oidc/token/exchange/package/@knowdrive%2fmcp")
           echo "npm OIDC exchange: HTTP $code"
           python3 -c 'import json;d=json.load(open("resp.json"));d.pop("token",None);print(json.dumps(d))' 2>/dev/null || head -c 400 resp.json
           rm -f resp.json
