@@ -34,10 +34,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # No registry-url: with it, setup-node writes an .npmrc whose token is a
+      # placeholder (NODE_AUTH_TOKEN defaults to XXXXX-…), npm sends that instead
+      # of doing the trusted-publishing OIDC exchange, and the PUT 404s (seen on
+      # the first v0.1.7 run). npm's default registry is already npmjs.org.
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          registry-url: https://registry.npmjs.org
 
       - name: Tag, package.json and server.json agree
         run: |
@@ -62,7 +65,8 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           if [ -n "$NPM_TOKEN" ]; then
-            NODE_AUTH_TOKEN="$NPM_TOKEN" npm publish --provenance --access public
+            npm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"
+            npm publish --provenance --access public
           else
             npm publish --provenance --access public   # npm trusted publishing (OIDC)
           fi

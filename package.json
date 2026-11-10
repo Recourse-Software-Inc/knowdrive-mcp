@@ -1,6 +1,6 @@
 {
   "name": "@knowdrive/mcp",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "mcpName": "ai.knowdrive/knowdrive-mcp",
   "description": "Private, multimodal knowledge store for agents: hybrid search over your docs, images, audio and video with cited, provenance-backed results. `npx -y @knowdrive/mcp` bridges any stdio MCP client to the hosted KnowDrive server.",
   "type": "module",

@@ -4,7 +4,7 @@
   "title": "KnowDrive",
   "description": "Private, multimodal knowledge store for agents: hybrid search with cited, provenance-backed results.",
   "websiteUrl": "https://knowdrive.ai",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "repository": {
     "url": "https://github.com/Recourse-Software-Inc/knowdrive-mcp",
     "source": "github",
@@ -14,7 +14,7 @@
     {
       "registryType": "npm",
       "identifier": "@knowdrive/mcp",
-      "version": "0.1.7",
+      "version": "0.1.8",
       "transport": {
         "type": "stdio"
       },
